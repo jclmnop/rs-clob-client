@@ -1194,7 +1194,13 @@ impl Client<Unauthenticated> {
         headers.insert("Connection", HeaderValue::from_static("keep-alive"));
         headers.insert("Content-Type", HeaderValue::from_static("application/json"));
 
+        #[cfg(not(feature = "hickory-dns"))]
         let client = ReqwestClient::builder().default_headers(headers).build()?;
+        #[cfg(feature = "hickory-dns")]
+        let client = ReqwestClient::builder()
+            .default_headers(headers)
+            .hickory_dns(true)
+            .build()?;
 
         let geoblock_host = Url::parse(
             config

@@ -34,6 +34,7 @@ tracing = ["dep:tracing", "dep:serde_ignored", "dep:serde_path_to_error"]
 ws = ["dep:backoff", "dep:bitflags", "dep:tokio", "dep:tokio-tungstenite"]
 rtds = ["dep:backoff", "dep:tokio", "dep:tokio-tungstenite"]
 heartbeats = ["dep:tokio", "dep:tokio-util"]
+hickory-dns = ["reqwest/hickory-dns"]
 
 [dependencies]
 alloy = { version = "1.6.3", default-features = false, features = [

@@ -93,7 +93,14 @@ impl Client {
         headers.insert("Accept", HeaderValue::from_static("*/*"));
         headers.insert("Connection", HeaderValue::from_static("keep-alive"));
         headers.insert("Content-Type", HeaderValue::from_static("application/json"));
+
+        #[cfg(not(feature = "hickory-dns"))]
         let client = ReqwestClient::builder().default_headers(headers).build()?;
+        #[cfg(feature = "hickory-dns")]
+        let client = ReqwestClient::builder()
+            .default_headers(headers)
+            .hickory_dns(true)
+            .build()?;
 
         Ok(Self {
             host: Url::parse(host)?,
