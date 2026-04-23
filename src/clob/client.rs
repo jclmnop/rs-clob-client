@@ -372,6 +372,9 @@ pub struct Config {
     #[builder(default = Duration::from_secs(5))]
     /// How often the [`Client`] will automatically submit heartbeats. The default is five (5) seconds.
     heartbeat_interval: Duration,
+    /// Custom reqwest client to use instead of the default one. If using a custom client, the
+    /// headers from [`Config::default_headers`] should be set before passing to config
+    reqwest_client: Option<ReqwestClient>,
 }
 
 impl Default for Config {
@@ -381,7 +384,23 @@ impl Default for Config {
             geoblock_host: None,
             #[cfg(feature = "heartbeats")]
             heartbeat_interval: Duration::from_secs(5),
+            reqwest_client: None,
         }
+    }
+}
+
+impl Config {
+    /// Default headers to be used with a custom [`ReqwestClient`]
+    #[must_use]
+    pub fn default_headers() -> HeaderMap {
+        let mut headers = HeaderMap::new();
+
+        headers.insert("User-Agent", HeaderValue::from_static("rs_clob_client"));
+        headers.insert("Accept", HeaderValue::from_static("*/*"));
+        headers.insert("Connection", HeaderValue::from_static("keep-alive"));
+        headers.insert("Content-Type", HeaderValue::from_static("application/json"));
+
+        headers
     }
 }
 
@@ -1187,14 +1206,11 @@ impl Client<Unauthenticated> {
     /// # }
     /// ```
     pub fn new(host: &str, config: Config) -> Result<Client<Unauthenticated>> {
-        let mut headers = HeaderMap::new();
-
-        headers.insert("User-Agent", HeaderValue::from_static("rs_clob_client"));
-        headers.insert("Accept", HeaderValue::from_static("*/*"));
-        headers.insert("Connection", HeaderValue::from_static("keep-alive"));
-        headers.insert("Content-Type", HeaderValue::from_static("application/json"));
-
-        let client = ReqwestClient::builder().default_headers(headers).build()?;
+        let client = config.reqwest_client.clone().unwrap_or(
+            ReqwestClient::builder()
+                .default_headers(Config::default_headers())
+                .build()?,
+        );
 
         let geoblock_host = Url::parse(
             config
