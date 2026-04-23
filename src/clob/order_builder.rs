@@ -422,7 +422,7 @@ impl<K: AuthKind> OrderBuilder<Market, K> {
 
             // Buy N shares: use cutoff `price` derived from ask depth
             (Side::Buy, AmountInner::Shares(_)) => {
-                let usdc = (raw_amount * price).trunc_with_scale(decimals + LOT_SIZE_SCALE);
+                let usdc = (raw_amount * price).trunc_with_scale(2);
                 (raw_amount, usdc)
             }
 
